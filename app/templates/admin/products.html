@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Products - Admin{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-3xl font-extrabold text-gray-900">📦 Products</h1>
+        <a href="{{ url_for('admin.add_product') }}"
+            class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2 rounded-xl font-semibold hover:from-purple-700 hover:to-indigo-700 transition shadow">
+            + Add Product
+        </a>
+    </div>
+    <div class="bg-white rounded-2xl shadow overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50">
+                <tr class="text-gray-500 border-b">
+                    <th class="px-4 py-3 text-left">Image</th>
+                    <th class="px-4 py-3 text-left">Name</th>
+                    <th class="px-4 py-3 text-left">Category</th>
+                    <th class="px-4 py-3 text-left">Price</th>
+                    <th class="px-4 py-3 text-left">Stock</th>
+                    <th class="px-4 py-3 text-left">Status</th>
+                    <th class="px-4 py-3 text-left">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="px-4 py-3">
+                        {% if product.image_url %}
+                        <img src="{{ product.image_url }}" class="w-12 h-12 rounded-lg object-cover">
+                        {% else %}
+                        <div class="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center text-xl">🛍️</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 font-semibold text-gray-800">{{ product.name }}</td>
+                    <td class="px-4 py-3">
+                        <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs">{{ product.category }}</span>
+                    </td>
+                    <td class="px-4 py-3 font-semibold text-purple-600">KES {{ "%.2f"|format(product.price) }}</td>
+                    <td class="px-4 py-3">{{ product.stock }}</td>
+                    <td class="px-4 py-3">
+                        {% if product.is_active %}
+                        <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">Active</span>
+                        {% else %}
+                        <span class="bg-gray-100 text-gray-500 px-2 py-1 rounded-full text-xs font-semibold">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="flex items-center space-x-2">
+                            <a href="{{ url_for('admin.edit_product', product_id=product.id) }}"
+                                class="text-indigo-600 hover:underline font-medium text-xs">Edit</a>
+                            <form method="POST" action="{{ url_for('admin.delete_product', product_id=product.id) }}"
+                                onsubmit="return confirm('Deactivate this product?')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="text-red-500 hover:underline font-medium text-xs">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" class="px-4 py-8 text-center text-gray-400">No products yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

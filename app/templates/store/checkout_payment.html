@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% block title %}Pay for Order #{{ order.id }} - ShopKenya{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-2">💳 Complete Payment</h1>
+    <p class="text-gray-500 mb-8">Order #{{ order.id }} — Total: <span class="font-bold text-purple-600">KES {{ "%.2f"|format(order.total_amount) }}</span></p>
+
+    <!-- Order Items Summary -->
+    <div class="bg-white rounded-2xl shadow p-6 border border-gray-100 mb-6">
+        <h2 class="text-lg font-bold text-gray-800 mb-3">Order Items</h2>
+        {% for item in order_items %}
+        <div class="flex justify-between text-sm py-1 border-b border-gray-50">
+            <span class="text-gray-700">{{ item.product.name }} × {{ item.quantity }}</span>
+            <span class="font-semibold">KES {{ "%.2f"|format(item.unit_price * item.quantity) }}</span>
+        </div>
+        {% endfor %}
+        <div class="flex justify-between font-extrabold text-gray-900 pt-3">
+            <span>Total</span>
+            <span>KES {{ "%.2f"|format(order.total_amount) }}</span>
+        </div>
+    </div>
+
+    <!-- M-Pesa Payment Form -->
+    <div class="bg-white rounded-2xl shadow p-6 border border-gray-100">
+        <h2 class="text-lg font-bold text-gray-800 mb-4">💚 Pay with M-Pesa</h2>
+        <div id="payment-status" class="hidden mb-4 p-3 rounded-lg text-sm font-medium"></div>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+            <input type="tel" id="phone-input" placeholder="254712345678"
+                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-400"
+                value="254">
+            <p class="text-xs text-gray-400 mt-1">Format: 254XXXXXXXXX</p>
+        </div>
+        <button id="pay-btn" onclick="initiatePayment()"
+            class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 rounded-xl font-bold text-lg hover:from-green-600 hover:to-emerald-700 transition shadow">
+            Pay KES {{ "%.2f"|format(order.total_amount) }} with M-Pesa
+        </button>
+        <p class="text-center text-gray-400 text-xs mt-3">Demo Mode: M-Pesa credentials not required for testing.</p>
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('store.home') }}" class="text-indigo-600 hover:underline text-sm">Continue Shopping</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const orderId = {{ order.id }};
+
+function initiatePayment() {
+    const phone = document.getElementById('phone-input').value.trim();
+    const btn = document.getElementById('pay-btn');
+    const statusEl = document.getElementById('payment-status');
+
+    if (!phone || phone.length < 12) {
+        showStatus('Please enter a valid phone number (format: 254XXXXXXXXX)', 'error');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    showStatus('Sending STK push to your phone...', 'info');
+
+    fetch('/payment/initiate', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({order_id: orderId, phone: phone})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showStatus('✅ STK push sent! Check your phone and enter your M-Pesa PIN.', 'success');
+            pollPaymentStatus();
+        } else {
+            showStatus('ℹ️ ' + (data.message || 'Payment initiation failed. (Demo mode)'), 'warning');
+            btn.disabled = false;
+            btn.textContent = 'Retry Payment';
+        }
+    })
+    .catch(() => {
+        showStatus('Payment request sent (demo mode).', 'warning');
+        btn.disabled = false;
+        btn.textContent = 'Retry Payment';
+    });
+}
+
+function showStatus(msg, type) {
+    const el = document.getElementById('payment-status');
+    el.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'bg-yellow-100', 'text-yellow-800', 'bg-blue-100', 'text-blue-800');
+    const classes = {
+        success: 'bg-green-100 text-green-800',
+        error: 'bg-red-100 text-red-800',
+        warning: 'bg-yellow-100 text-yellow-800',
+        info: 'bg-blue-100 text-blue-800'
+    };
+    el.className = 'mb-4 p-3 rounded-lg text-sm font-medium ' + (classes[type] || classes.info);
+    el.textContent = msg;
+}
+
+function pollPaymentStatus() {
+    let attempts = 0;
+    const interval = setInterval(() => {
+        attempts++;
+        fetch('/payment/status/' + orderId)
+            .then(r => r.json())
+            .then(data => {
+                if (data.order_status === 'paid') {
+                    clearInterval(interval);
+                    showStatus('🎉 Payment successful! Your order is confirmed.', 'success');
+                } else if (data.status === 'failed') {
+                    clearInterval(interval);
+                    showStatus('❌ Payment failed. Please try again.', 'error');
+                    document.getElementById('pay-btn').disabled = false;
+                    document.getElementById('pay-btn').textContent = 'Retry Payment';
+                }
+            });
+        if (attempts >= 10) clearInterval(interval);
+    }, 5000);
+}
+</script>
+{% endblock %}

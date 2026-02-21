@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}ShopKenya - Discover Amazing Products{% endblock %}
+{% block content %}
+
+<!-- Hero Section -->
+<div class="bg-gradient-to-br from-purple-700 via-indigo-600 to-blue-500 text-white py-20 px-4">
+    <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-5xl font-extrabold mb-4 drop-shadow">Discover Amazing Products</h1>
+        <p class="text-xl text-purple-100 mb-8">Shop from the best local stores across Kenya</p>
+        <form action="{{ url_for('store.search') }}" method="GET" class="flex max-w-xl mx-auto">
+            <input type="text" name="q" placeholder="Search products..."
+                class="flex-grow rounded-l-full px-6 py-3 text-gray-800 focus:outline-none text-lg shadow">
+            <button type="submit"
+                class="bg-yellow-400 text-purple-900 font-bold px-8 py-3 rounded-r-full hover:bg-yellow-300 transition shadow text-lg">
+                🔍 Search
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Stores Section -->
+<div class="max-w-7xl mx-auto px-4 py-12">
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">🏪 Our Stores</h2>
+    {% if stores %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        {% for store in stores %}
+        <a href="{{ url_for('store.storefront', slug=store.slug) }}"
+            class="bg-white rounded-2xl shadow hover:shadow-xl transition p-6 border border-gray-100 hover:border-indigo-300 group">
+            <div class="flex items-center space-x-3 mb-3">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xl">
+                    {{ store.name[0].upper() }}
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 group-hover:text-indigo-600 transition">{{ store.name }}</h3>
+            </div>
+            <p class="text-gray-500 text-sm">{{ store.description[:100] if store.description else 'Visit this store to see amazing products.' }}</p>
+            <span class="inline-block mt-3 text-indigo-600 text-sm font-semibold group-hover:underline">Visit Store →</span>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-400 mb-12">No stores yet. <a href="{{ url_for('auth.signup') }}" class="text-indigo-600 underline">Create one!</a></p>
+    {% endif %}
+
+    <!-- Featured Products -->
+    <h2 class="text-3xl font-bold text-gray-800 mb-6">⭐ Featured Products</h2>
+    {% if featured_products %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {% for product in featured_products %}
+        <div class="bg-white rounded-2xl shadow hover:shadow-xl transition border border-gray-100 overflow-hidden group">
+            {% if product.image_url %}
+            <img src="{{ product.image_url }}" alt="{{ product.name }}"
+                class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+            {% else %}
+            <div class="w-full h-48 bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                <span class="text-5xl">🛍️</span>
+            </div>
+            {% endif %}
+            <div class="p-4">
+                <span class="inline-block bg-indigo-100 text-indigo-700 text-xs font-semibold px-2 py-1 rounded-full mb-2">{{ product.category }}</span>
+                <h3 class="font-bold text-gray-800 mb-1 truncate">{{ product.name }}</h3>
+                <p class="text-purple-600 font-extrabold text-lg mb-3">KES {{ "%.2f"|format(product.price) }}</p>
+                <form method="POST" action="{{ url_for('store.cart_add', product_id=product.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit"
+                        class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition text-sm">
+                        Add to Cart 🛒
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-400">No products yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

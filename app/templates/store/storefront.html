@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}{{ store.name }} - ShopKenya{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Store Header -->
+    <div class="bg-gradient-to-r from-purple-600 to-indigo-500 rounded-2xl p-8 text-white mb-8 shadow-lg">
+        <div class="flex items-center space-x-4">
+            <div class="w-16 h-16 rounded-full bg-white bg-opacity-20 flex items-center justify-center text-3xl font-bold">
+                {{ store.name[0].upper() }}
+            </div>
+            <div>
+                <h1 class="text-3xl font-extrabold">{{ store.name }}</h1>
+                <p class="text-purple-100 mt-1">{{ store.description or 'Welcome to our store!' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sort Controls -->
+    <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Products ({{ products|length }})</h2>
+        <form method="GET" class="flex items-center space-x-2">
+            <label class="text-sm text-gray-600 font-medium">Sort by:</label>
+            <select name="sort" onchange="this.form.submit()"
+                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <option value="price_asc" {% if sort_param=='price_asc' %}selected{% endif %}>Price: Low to High</option>
+                <option value="price_desc" {% if sort_param=='price_desc' %}selected{% endif %}>Price: High to Low</option>
+                <option value="name" {% if sort_param=='name' %}selected{% endif %}>Name</option>
+                <option value="newest" {% if sort_param=='newest' %}selected{% endif %}>Newest</option>
+            </select>
+        </form>
+    </div>
+
+    {% if products %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {% for product in products %}
+        <div class="bg-white rounded-2xl shadow hover:shadow-xl transition border border-gray-100 overflow-hidden group">
+            <a href="{{ url_for('store.product_detail', product_id=product.id) }}">
+                {% if product.image_url %}
+                <img src="{{ product.image_url }}" alt="{{ product.name }}"
+                    class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
+                {% else %}
+                <div class="w-full h-48 bg-gradient-to-br from-purple-100 to-indigo-100 flex items-center justify-center">
+                    <span class="text-5xl">🛍️</span>
+                </div>
+                {% endif %}
+            </a>
+            <div class="p-4">
+                <span class="inline-block bg-indigo-100 text-indigo-700 text-xs font-semibold px-2 py-1 rounded-full mb-2">{{ product.category }}</span>
+                <h3 class="font-bold text-gray-800 mb-1 truncate">{{ product.name }}</h3>
+                <p class="text-purple-600 font-extrabold text-lg mb-3">KES {{ "%.2f"|format(product.price) }}</p>
+                <form method="POST" action="{{ url_for('store.cart_add', product_id=product.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="quantity" value="1">
+                    <button type="submit"
+                        class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-2 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 transition text-sm">
+                        Add to Cart 🛒
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-20">
+        <span class="text-6xl">📦</span>
+        <p class="text-gray-500 mt-4 text-lg">No products in this store yet.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

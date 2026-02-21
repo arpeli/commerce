@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Your Cart - ShopKenya{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-10">
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-8">🛒 Your Cart</h1>
+    {% if cart_items %}
+    <div class="grid md:grid-cols-3 gap-8">
+        <!-- Cart Items -->
+        <div class="md:col-span-2 space-y-4">
+            {% for item in cart_items %}
+            <div class="bg-white rounded-xl shadow p-4 flex items-center space-x-4 border border-gray-100" id="cart-item-{{ item.product_id }}">
+                {% if item.image_url %}
+                <img src="{{ item.image_url }}" alt="{{ item.name }}" class="w-20 h-20 object-cover rounded-lg">
+                {% else %}
+                <div class="w-20 h-20 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-lg flex items-center justify-center">
+                    <span class="text-3xl">🛍️</span>
+                </div>
+                {% endif %}
+                <div class="flex-grow">
+                    <h3 class="font-bold text-gray-800">{{ item.name }}</h3>
+                    <p class="text-purple-600 font-semibold">KES {{ "%.2f"|format(item.price) }}</p>
+                    <div class="flex items-center space-x-2 mt-1">
+                        <label class="text-sm text-gray-500">Qty:</label>
+                        <input type="number" value="{{ item.quantity }}" min="1"
+                            class="w-16 border border-gray-300 rounded px-2 py-1 text-sm"
+                            onchange="updateCartItem({{ item.product_id }}, this.value)">
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="font-bold text-gray-800">KES {{ "%.2f"|format(item.subtotal) }}</p>
+                    <button onclick="removeCartItem({{ item.product_id }})"
+                        class="mt-2 text-red-500 hover:text-red-700 text-sm font-medium transition">
+                        Remove ✕
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Order Summary -->
+        <div class="bg-white rounded-xl shadow p-6 border border-gray-100 h-fit sticky top-20">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">Order Summary</h2>
+            <div class="flex justify-between text-gray-600 mb-2">
+                <span>Subtotal</span>
+                <span>KES {{ "%.2f"|format(cart_total) }}</span>
+            </div>
+            <div class="border-t border-gray-200 my-3"></div>
+            <div class="flex justify-between font-extrabold text-gray-900 text-lg mb-6">
+                <span>Total</span>
+                <span>KES {{ "%.2f"|format(cart_total) }}</span>
+            </div>
+            <a href="{{ url_for('store.checkout') }}"
+                class="block w-full text-center bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-indigo-700 transition shadow">
+                Proceed to Checkout →
+            </a>
+            <a href="{{ url_for('store.home') }}" class="block text-center text-indigo-600 hover:underline mt-4 text-sm">
+                ← Continue Shopping
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="text-center py-20">
+        <span class="text-7xl">🛒</span>
+        <p class="text-gray-500 mt-6 text-xl">Your cart is empty.</p>
+        <a href="{{ url_for('store.home') }}"
+            class="inline-block mt-6 bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-8 py-3 rounded-xl font-bold text-lg hover:from-purple-700 hover:to-indigo-700 transition shadow">
+            Start Shopping
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function updateCartItem(productId, quantity) {
+    fetch('/cart/update', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}'},
+        body: JSON.stringify({items: [{id: productId, quantity: parseInt(quantity)}]})
+    }).then(() => location.reload());
+}
+function removeCartItem(productId) {
+    fetch('/cart/remove/' + productId, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}'},
+    }).then(() => location.reload());
+}
+</script>
+{% endblock %}
