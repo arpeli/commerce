@@ -1,13 +1,13 @@
-# ShopKenya — Flask E-commerce Application
+# ShopKenya
 
-A fully-featured e-commerce web application built with Flask, SQLAlchemy, and Tailwind CSS. Includes custom Data Structures and Algorithms (DSA) modules and M-Pesa STK push payment integration.
+A fully-featured e-commerce web application built with Flask, SQLAlchemy, and Tailwind CSS. Includes custom Data Structures and Algorithms (DSA) modules.
 
 ---
 
 ## Features
 
 - **Multi-store marketplace** — any user can register as a store owner and create a storefront
-- **Product catalog** with categories, images, stock tracking
+- **Product catalog** with categories, images, and stock tracking
 - **Shopping cart** — session-based for guests, database-backed for logged-in users
 - **Checkout & orders** — order creation with item-level records
 - **M-Pesa STK push integration** — real Safaricom Daraja API support (sandbox + live)
