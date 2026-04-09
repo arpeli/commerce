@@ -5,8 +5,10 @@
 - Loise Wambui - BSCCS/2025/40219
 - Grace Wanjiru -BSCCS/2025/39629
 - Fridah Harawo -BSCCS/2025/35619
+- Derrick Mburu - BSCCS/2025/40404
 - Rose Mateta - BSCCS/2025/39761
 - Tinaelis Mumbi - BSCCS/2025/40091
+- Ericson Karanja -BSCCS/2025/39563
 - Benie Macharia - BSCCS/2025/39532
 - Brillian Andalo - BSCCS/2025/41447
 
