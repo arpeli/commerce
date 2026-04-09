@@ -1,3 +1,15 @@
+# Project 1 for BIT2203: DATA STRUCTURES AND ALGORITHMS
+
+## Group Members
+- Ariel Boutcher -BSCCS/2025/40350
+- Loise Wambui - BSCCS/2025/40219
+- Grace Wanjiru -BSCCS/2025/39629
+- Fridah Harawo -BSCCS/2025/35619
+- Rose Mateta - BSCCS/2025/39761
+- Tinaelis Mumbi - BSCCS/2025/40091
+- Benie Macharia - BSCCS/2025/39532
+- Brillian Andalo - BSCCS/2025/41447
+
 # ShopKenya
 
 A fully-featured e-commerce web application built with Flask, SQLAlchemy, and Tailwind CSS. Includes custom Data Structures and Algorithms (DSA) modules.
